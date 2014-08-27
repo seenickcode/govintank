@@ -7,7 +7,7 @@ package main
 
 import (
   "fmt"
-  bdb "seenickcode/brewerydb"
+  bdb "github.com/seenickcode/brewerydb"
 )
 
 func main() {
