@@ -1,5 +1,13 @@
 # A Solid BreweryDB Wrapper for Go
 
+## Features
+
+* Beer Search
+
+## TODO
+
+* Tests
+
 ## Example
 
 ````
@@ -15,11 +23,11 @@ func main() {
   client := bdb.NewClient("YOUR KEY HERE")
   
   // search for a Bud Light beer
-  response := client.Search("bud light", 0)
+  response := client.SearchBeers("bud light", 0)
 
   // print results
-  for ndx, item := range response.Data {
-    fmt.Printf("%d: %v\n", ndx, item["name"])
+  for ndx, beer := range response.Beers {
+    fmt.Printf("%d: %v\n", ndx, beer.Name)
   }
 }
 ````

@@ -17,14 +17,50 @@ type breweryDBClient struct {
   VerboseMode bool
 }
 
-type BreweryDBResponse struct {
+type SearchResponse struct {
   CurrentPage int
   NumberOfPages int
-  TotalResults int `json:"totalResults"`
-  Data []map[string]interface{}
+  TotalResults int
 }
 
-type Response map[string]string
+type BeerSearchResponse struct {
+  Info SearchResponse
+  Beers []Beer `json:"Data"`
+}
+
+type Beer struct {
+  Name string
+  ABV string
+  IBU string
+  Style Style
+  Available Available
+  Breweries []Brewery
+  SocialAccounts []SocialAccount
+}
+
+type Style struct {
+  Name string
+}
+
+type Available struct {
+  Name string
+}
+
+type Brewery struct {
+  Name string
+  Website string
+  Locations []Location
+}
+
+type Location struct {
+  Locality string
+  Region string
+  IsPrimary string
+}
+
+type SocialAccount struct {
+  Link string
+}
 
 func NewClient(apiKey string) (c *breweryDBClient) {
   c = new(breweryDBClient)
@@ -34,42 +70,48 @@ func NewClient(apiKey string) (c *breweryDBClient) {
   return c
 }
 
-func (c *breweryDBClient) Search(q string, pg int) (bdbResp BreweryDBResponse) {
+func (c *breweryDBClient) SearchBeers(q string, pg int) (resp BeerSearchResponse) {
   
   // set up query string then url
   v := url.Values{}
-  v.Set("key", c.apiKey)
+  v.Set("type", "beer")
+  v.Add("withBreweries", "Y")       // add premium features even 
+  v.Add("withSocialAccounts", "Y")  // if user isn't signed up for them
   v.Add("q", q)  
   v.Add("p", strconv.Itoa(pg))
+  v.Add("key", c.apiKey)
   url := c.baseUrl + "/search?" + v.Encode()
   
   // perform request and convert response to an object
-  c.fetchThenUnmarshal(url, &bdbResp)
+  data := c.httpRequestToBytes(url)
+
+  // deserialize to objects
+  err := json.Unmarshal(data, &resp)
+  if err != nil {
+    fmt.Printf("json err: %v\n", err)
+  }
 
   // report our search results
-  c.log("got %d total results", bdbResp.TotalResults)
-  
-  return bdbResp
+  c.log("got %d results across %d pages\n", resp.Info.TotalResults, resp.Info.NumberOfPages)
+
+  return
 }
 
-func (c *breweryDBClient) fetchThenUnmarshal(url string, bdbResp *BreweryDBResponse) {
+func (c *breweryDBClient) httpRequestToBytes(url string) (buf []byte) {
   c.log("fetching: %v\n", url)
   res, err := http.Get(url)
   if err != nil {
     fmt.Printf("http err: %v\n", err)
   }
-  buf, err := ioutil.ReadAll(res.Body)
+  buf, err = ioutil.ReadAll(res.Body)
   if err != nil {
     fmt.Printf("ioutil err: %v\n", err)
   }
-  err = json.Unmarshal(buf, &bdbResp)
-  if err != nil {
-    fmt.Printf("json err: %v\n", err)
-  }
+  return
 }
 
 func (c *breweryDBClient) log(format string, a ...interface{}) {
   if c.VerboseMode {
-    fmt.Printf(format, a)
+    fmt.Printf(format, a...)
   }
 }
