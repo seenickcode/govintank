@@ -104,6 +104,7 @@ func (c *breweryDBClient) httpRequestToBytes(url string) (buf []byte) {
     fmt.Printf("http err: %v\n", err)
   }
   buf, err = ioutil.ReadAll(res.Body)
+  res.Body.Close()
   if err != nil {
     fmt.Printf("ioutil err: %v\n", err)
   }
