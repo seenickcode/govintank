@@ -24,7 +24,7 @@ type SearchResponse struct {
 }
 
 type BeerSearchResponse struct {
-  Info SearchResponse
+  SearchResponse
   Beers []Beer `json:"Data"`
 }
 
@@ -83,7 +83,7 @@ func (c *breweryDBClient) SearchBeers(q string, pg int) (resp BeerSearchResponse
   url := c.baseUrl + "/search?" + v.Encode()
   
   // perform request and convert response to an object
-  data := c.httpRequestToBytes(url)
+  data := c.performGetRequest(url)
 
   // deserialize to objects
   err := json.Unmarshal(data, &resp)
@@ -92,12 +92,12 @@ func (c *breweryDBClient) SearchBeers(q string, pg int) (resp BeerSearchResponse
   }
 
   // report our search results
-  c.log("got %d results across %d pages\n", resp.Info.TotalResults, resp.Info.NumberOfPages)
+  c.log("fetched pg %d (%d results spanning %d pages)\n", resp.CurrentPage, resp.TotalResults, resp.NumberOfPages)
 
   return
 }
 
-func (c *breweryDBClient) httpRequestToBytes(url string) (buf []byte) {
+func (c *breweryDBClient) performGetRequest(url string) (buf []byte) {
   c.log("fetching: %v\n", url)
   res, err := http.Get(url)
   if err != nil {
