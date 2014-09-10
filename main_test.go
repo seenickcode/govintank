@@ -7,6 +7,7 @@ import (
 )
 
 func TestSearchBreweryDB(t *testing.T) {
+<<<<<<< HEAD
 
 	apiKey := os.Getenv("BREWERYDB_KEY")
 	if len(apiKey) == 0 {
