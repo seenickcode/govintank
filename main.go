@@ -89,7 +89,7 @@ func (c *breweryDBClient) SearchBeers(q string, pg int) (resp BeerSearchResponse
 		return
 	}
 	// deserialize to objects
-	err := json.Unmarshal(data, &resp)
+	err = json.Unmarshal(data, &resp)
 	if err != nil {
 		fmt.Printf("json err: %v\n", err)
 		return
