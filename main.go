@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/tideland/goas/v2/logger"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -56,10 +56,6 @@ func NewClient(appID string, secret string) (c *apiClient) {
 // http://apiv1.cruvee.com/search/wines?q=smoking&appId=<appID>&sig=1f843e4b311689fa3145f76d1e663268&ts=1415632055270095&fmt=json
 func (c *apiClient) SearchWines(q string, pg int) (r WineSearchResponse) {
 
-	logger.SetLevel(logger.LevelDebug)
-
-	logger.Debugf("searching with '%v'", q)
-
 	ts := timestamp()
 	sig := c.vintankSignatureFor("GET", c.endpointSearchWines)
 
@@ -76,14 +72,14 @@ func (c *apiClient) SearchWines(q string, pg int) (r WineSearchResponse) {
 	// make request
 	data, err := c.makeGetRequest(url)
 	if err != nil {
-		logger.Errorf("err: %v", err)
+		fmt.Printf("err: %v\n", err)
 		return
 	}
 
 	// deserialize
 	err = json.Unmarshal(data, &r)
 	if err != nil {
-		logger.Errorf("unmarshal err: %v\n", err)
+		fmt.Printf("unmarshal err: %v\n", err)
 		return
 	}
 
@@ -93,22 +89,21 @@ func (c *apiClient) SearchWines(q string, pg int) (r WineSearchResponse) {
 // http
 
 func (c *apiClient) makeGetRequest(url string) (buf []byte, err error) {
-	logger.Infof("performing request: %v\n", url)
 
 	res, err := http.Get(url)
 	if err != nil {
-		logger.Errorf("err performing request: %v\n", err)
+		fmt.Printf("err performing request: %v\n", err)
 		return
 	}
 	if res == nil {
-		logger.Errorf("response is nil")
+		fmt.Printf("response is nil\n")
 		err = errors.New("response is nil")
 		return
 	}
 	buf, err = ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		logger.Errorf("err reading response body: %v\n", err)
+		fmt.Printf("err reading response body: %v\n", err)
 	}
 	return
 }
@@ -127,9 +122,7 @@ func (c *apiClient) vintankSignatureFor(method string, endpoint string) (s strin
 	b.WriteString(timestamp() + "\n")
 	b.WriteString(endpoint + "\n")
 	rawStr := b.String()
-	logger.Debugf("constructing sig with: %v\n", rawStr)
 	s = md5Hex(rawStr)
-	logger.Debugf("constructed sig: %v", s)
 	return
 }
 
@@ -144,6 +137,5 @@ func md5Hex(s string) string {
 func timestamp() string {
 	nowMS := time.Now().UnixNano() / 1000
 	s := strconv.FormatInt(nowMS, 10)
-	logger.Debugf("generated timestamp: %v\n", s)
 	return s
 }
