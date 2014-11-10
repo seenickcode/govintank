@@ -66,7 +66,9 @@ func (c *apiClient) SearchWines(q string, pg int) (r WineSearchResponse) {
 	v.Add("sig", sig) // if user isn't signed up for them
 	v.Add("q", q)
 	v.Add("fmt", "json")
-	v.Add("page", strconv.Itoa(pg))
+	// vintank's page param isn't zero based
+	// (but if you pass in 0 just in case it will still assume it's '1')
+	v.Add("page", strconv.Itoa(pg+1))
 	url := c.baseUrl + c.endpointSearchWines + "?" + v.Encode()
 
 	// make request

@@ -23,6 +23,7 @@ func TestSearchBreweryDB(t *testing.T) {
 
 	resp := c.SearchWines(query, 0)
 
+	// ensure we get a response
 	if resp.Total == 0 {
 		t.Errorf("no wines returned for query '%v' when there should have been\n", query)
 	}
@@ -37,4 +38,10 @@ func TestSearchBreweryDB(t *testing.T) {
 		t.Errorf("no Brand for first result")
 	}
 	fmt.Printf("got wine: %v", (firstWine.Name + " (" + firstWine.Brand.Name + ")\n"))
+
+	// ensure if we query more pages there are 0 results returned
+	resp = c.SearchWines(query, 10)
+	if len(resp.Results) != 0 {
+		t.Errorf("should have gotten only 0 results")
+	}
 }
