@@ -34,7 +34,7 @@ type WineSearchResponse struct {
 
 type Wine struct {
 	Name  string  `json:"name"`
-	ABV   float32 `json:"ABV"`
+	ABV   float64 `json:"ABV"`
 	Brand Brand   `json:"brand"`
 }
 
